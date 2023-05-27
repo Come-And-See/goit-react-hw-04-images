@@ -19,17 +19,16 @@ export const App = () => {
     axios.defaults.baseURL = 'https://pixabay.com/api/'
     const KEY = '11680265-49a2c7c2ef17772c90d3b7b54'
 
-    setTimeout(() => {
-      axios.get(`?key=${KEY}&q=${query}&image_type=photo&page=${page}&per_page=12`).then(response => {
-        setImg([...img, ...response.data.hits])
-        setTotal(total + response.data.hits.length);
+    axios.get(`?key=${KEY}&q=${query}&image_type=photo&page=${page}&per_page=12`).then(response => {
+      setImg([...img, ...response.data.hits])
+      setTotal(total + response.data.hits.length);
+      setisLoading(false);
+    })
+      .catch(error => {
+        console.log(error);
         setisLoading(false);
-      })
-        .catch(error => {
-          console.log(error);
-          setisLoading(false);
-        });
-    }, 1000)
+      });
+
 
   }
 
@@ -38,7 +37,7 @@ export const App = () => {
     if (query !== '') {
       fetchData();
     }
-     // eslint-disable-next-line react-hooks/exhaustive-deps
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [query, page]);
 
 
