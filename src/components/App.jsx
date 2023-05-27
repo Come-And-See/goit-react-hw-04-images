@@ -1,4 +1,4 @@
-import React, { Component } from "react"
+import React, { useState, useEffect } from "react"
 import { Searchbar } from "./Searchbar/Searchbar";
 import * as css from './App.styled'
 import axios from "axios";
@@ -7,79 +7,69 @@ import { Loader } from "./Loader/Loader";
 import { Button } from "./Button/Button";
 
 
-export class App extends Component {
-  state = {
-    query: '',
-    img: [],
-    isLoading: false,
-    page: 1,
-    total: 0,
-    isLoadMore: false
-
-  }
+export const App = () => {
+  const [query, setQuery] = useState('');
+  const [img, setImg] = useState([]);
+  const [page, setPage] = useState(1);
+  const [total, setTotal] = useState(0);
+  const [isLoading, setisLoading] = useState(false);
 
 
-
-  componentDidUpdate(_, prevState) {
-    if (prevState.query !== this.state.query || prevState.page !== this.state.page) {
-      this.fetchData();
-    }
-  }
-
-
-
-  upQuery = (e) => {
-    e.preventDefault();
-    const value = e.currentTarget[1].value;
-    this.setState({ query: value, page: 1, img: [] });
-
-  }
-
-
-
-
-  fetchData = () => {
-
-    this.setState({ isLoading: true })
-    const { query, page, total } = this.state;
+  const fetchData = () => {
     axios.defaults.baseURL = 'https://pixabay.com/api/'
     const KEY = '11680265-49a2c7c2ef17772c90d3b7b54'
 
-    axios.get(`?key=${KEY}&q=${query}&image_type=photo&page=${page}&per_page=12`).then(response => {
-      this.setState(prevState => ({ img: [...prevState.img, ...response.data.hits], isLoading: false, total: prevState.total + response.data.hits.length }))
-      if (total >= response.data.totalHits) {
-        this.setState({ isLoadMore: true })
-      }
-    })
-      .catch(error => {
-        console.log(error);
-        this.setState({ isLoading: false });
-      });
+    setTimeout(() => {
+      axios.get(`?key=${KEY}&q=${query}&image_type=photo&page=${page}&per_page=12`).then(response => {
+        setImg([...img, ...response.data.hits])
+        setTotal(total + response.data.hits.length);
+        setisLoading(false);
+      })
+        .catch(error => {
+          console.log(error);
+          setisLoading(false);
+        });
+    }, 1000)
 
   }
 
-  LoadMore = () => {
-    this.setState(prevState => ({
-      page: prevState.page + 1
-    }))
+
+  useEffect(() => {
+    if (query !== '') {
+      fetchData();
+    }
+  }, [query, page]);
+
+
+
+  const upQuery = (e) => {
+    e.preventDefault();
+    const value = e.currentTarget[1].value;
+    setQuery(value);
+    setPage(1);
+    setImg([]);
+    setisLoading(true);
   }
 
 
-
-
-  render() {
-    const { upQuery, LoadMore } = this;
-    const { img, isLoading, isLoadMore } = this.state;
-    return (
-      <css.App>
-        <Searchbar upQuery={upQuery} />
-        <ImageGallery data={img} />
-        {isLoading && <Loader />}
-        {img.length > 0 && !isLoadMore && <Button LoadMore={LoadMore} />}
-
-      </css.App>
-    );
+  const LoadMore = () => {
+    setisLoading(true);
+    setPage(prevState => (
+      prevState + 1
+    ))
   }
+
+
+  return (
+    <css.App>
+      <Searchbar upQuery={upQuery} />
+      <ImageGallery data={img} />
+      {isLoading && <Loader />}
+      {img.length > 0 && <Button LoadMore={LoadMore} />}
+
+    </css.App>
+  );
+
 };
 
 
