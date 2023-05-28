@@ -15,31 +15,37 @@ export const App = () => {
   const [isLoading, setisLoading] = useState(false);
 
 
-  const fetchData = () => {
-    axios.defaults.baseURL = 'https://pixabay.com/api/'
-    const KEY = '11680265-49a2c7c2ef17772c90d3b7b54'
-
-    axios.get(`?key=${KEY}&q=${query}&image_type=photo&page=${page}&per_page=12`).then(response => {
-      setImg([...img, ...response.data.hits])
-      setTotal(total + response.data.hits.length);
-      setisLoading(false);
-    })
-      .catch(error => {
-        console.log(error);
-        setisLoading(false);
-      });
 
 
-  }
+
+  const onLastPage = () => {
+    const maxPages = Math.ceil(total / 12);
+    return page >= maxPages;
+  };
 
 
   useEffect(() => {
+
+    const fetchData = () => {
+      axios.defaults.baseURL = 'https://pixabay.com/api/'
+      const KEY = '11680265-49a2c7c2ef17772c90d3b7b54'
+
+      axios.get(`?key=${KEY}&q=${query}&image_type=photo&page=${page}&per_page=12`).then(response => {
+        setImg(img => ([...img, ...response.data.hits]))
+        setTotal(response.data.totalHits);
+        setisLoading(false);
+      })
+        .catch(error => {
+          console.log(error);
+          setisLoading(false);
+        })
+    }
+
     if (query !== '') {
       fetchData();
     }
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [query, page]);
 
+  }, [query, page]);
 
 
   const upQuery = (e) => {
@@ -65,7 +71,7 @@ export const App = () => {
       <Searchbar upQuery={upQuery} />
       <ImageGallery data={img} />
       {isLoading && <Loader />}
-      {img.length > 0 && <Button LoadMore={LoadMore} />}
+      {!onLastPage() && img.length > 0 && <Button LoadMore={LoadMore} />}
 
     </css.App>
   );

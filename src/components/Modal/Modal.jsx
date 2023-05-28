@@ -4,26 +4,24 @@ import PropTypes from 'prop-types';
 
 export const Modal = ({ imgUrl, closeModal }) => {
 
-
     useEffect(() => {
+        const closeM = (e) => {
+            if (e.target === e.currentTarget || e.code === "Escape") {
+                closeModal();
+            }
+        };
+
         window.addEventListener('keydown', closeM);
 
         return () => {
             window.removeEventListener('keydown', closeM);
-        }
-         // eslint-disable-next-line react-hooks/exhaustive-deps
-    }, []);
+        };
+    }, [closeModal]);
 
-
-    const closeM = (e) => {
-        if (e.target === e.currentTarget || e.code === "Escape") {
-            closeModal();
-        }
-    }
 
 
     return (
-        <css.Overlay onClick={closeM}>
+        <css.Overlay onClick={closeModal}>
             <css.Modal>
                 <img src={imgUrl} alt="" />
             </css.Modal>
